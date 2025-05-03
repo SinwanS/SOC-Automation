@@ -1,4 +1,4 @@
-# SOC-Automation
+# SOC Automation
 
 ## Objective
 
