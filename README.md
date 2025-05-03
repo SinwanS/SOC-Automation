@@ -14,7 +14,8 @@ The SOC Automation lab is to explore how automation enhances incident response, 
 ### Tools Used
 
 - Wazuh
-- TheHive 
+- TheHive
+- Shuffle
 
 ## Steps
 ![SOCAutomation](https://github.com/user-attachments/assets/a2d11381-ebbf-4237-a9d0-6fc8338340b1)
