@@ -1,6 +1,6 @@
 # SOC Automation (In Progress)
 
-**Acknowledgment:** This project benefited greatly from the insights and tutorials provided by the YouTube channel [DFIR](https://www.youtube.com/@mydfir). Their comprehensive videos were invaluable in understanding and implementing the various components of the SOC Automation Lab.
+**Acknowledgment:** This project benefited greatly from the insights and tutorials provided by the YouTube channel [MyDFIR](https://www.youtube.com/@mydfir). Their comprehensive videos were invaluable in understanding and implementing the various components of the SOC Automation Lab.
 
 ## Objective
 
