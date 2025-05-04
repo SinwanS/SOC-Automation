@@ -28,6 +28,6 @@ The SOC Automation lab is to explore how automation enhances incident response, 
 ![windowsVM](https://github.com/user-attachments/assets/51c3868c-d599-4263-87dc-6b9cb93705d5)
 
 
-### 2. Install Sysmon on the VM using configuration files from [Sysmon Modular Config](https://github.com/olafhartong/sysmon-modular)
+### 2. Install Sysmon on the VM using configuration file from [Sysmon Modular Config](https://github.com/olafhartong/sysmon-modular)
 After extracting the Sysmon folder be sure to place the config file in the Sysmon folder before running the install.
 ![sysmon](https://github.com/user-attachments/assets/27533ae1-6a0d-48f8-8849-983c042468d9)
