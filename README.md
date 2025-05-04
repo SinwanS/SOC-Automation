@@ -23,3 +23,11 @@ The SOC Automation lab is to explore how automation enhances incident response, 
 
 ## Steps
 ![SOCAutomation](https://github.com/user-attachments/assets/a2d11381-ebbf-4237-a9d0-6fc8338340b1)
+
+### 1. Set up a Windows 10 Pro VM. You can use any software of your choosing. I will be using VirtualBox. I will be setting it with 4gb of memory and 50gb of storage. 
+![windowsVM](https://github.com/user-attachments/assets/51c3868c-d599-4263-87dc-6b9cb93705d5)
+
+
+### 2. Install Sysmon on the VM using configuration files from [Sysmon Modular Config](https://github.com/olafhartong/sysmon-modular)
+After extracting the Sysmon folder be sure to place the config file in the Sysmon folder before running the install.
+![sysmon](https://github.com/user-attachments/assets/27533ae1-6a0d-48f8-8849-983c042468d9)
