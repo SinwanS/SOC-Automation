@@ -199,7 +199,8 @@ Password: secret
 ### 9. Configure Wazuh
 login usign the admin creds from the initial install to the Wazuh web manager on your windows VM by going to `https://"wazuh public ip"`
 ![wazuhconfig](https://github.com/user-attachments/assets/011cace4-a24c-4091-ba6b-f65dec2f2a20)
-Click on add agent and set the server address to the Wazuh server public IP.\
+Click on add agent and Select Windows as the OS\
+Set the server address to the Wazuh server public IP.\
 The agent name can be whatever you want.\
 Copy and run the install command into an admin poweshell terminal on the VM\
 Start the Wazuh service in the terminal using:
