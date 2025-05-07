@@ -97,9 +97,112 @@ echo 'deb [signed-by=/usr/share/keyrings/strangebee-archive-keyring.gpg] https:/
 sudo apt-get update
 sudo apt-get install -y thehive
 ```
+![hiveinstall](https://github.com/user-attachments/assets/ecd143be-696e-431e-b270-6dad2f81eec1)
+
+### 6. Configure The Cassandra Database
+We will need to modify the `cassandra.yaml` file:
+```
+nano /etc/cassandra/cassandra.yaml
+```
+Note: use ctrl+W to find the fields
+First change the cluster name, it can be anything just remember it
+![clustername](https://github.com/user-attachments/assets/5518ecab-18ed-4cb7-927a-136a4b04fa8e)
+
+Set the `listen_address` to your Hive server's public IP, dont leave it as localhost
+![listenaddress](https://github.com/user-attachments/assets/aeb7be8d-0c35-4e6e-9bfa-82f2cdfe757c)
+
+Set the `rpc_address` to your Hive server's public IP, dont leave it as localhost
+![rpcaddress](https://github.com/user-attachments/assets/fb77fd87-866a-48ad-b804-4036b237a084)
+
+Lastly change the seed address in the `seed_provider` section to your Hive server's public IP, dont leave it as the default
+![seeds](https://github.com/user-attachments/assets/212da0f8-140d-4791-86e4-e2e9faa4b03d)
+
+Note: use ctrl+X to close and type Y to save
+
+Stop the Cassandra service:
+```
+systemctl stop cassandra.service
+```
+Remove the old Cassandra data files since we installed TheHive using the package:
+```
+rm -rf /var/lib/cassandra/*
+```
+Start the Cassandra service again:
+```
+systemctl start cassandra.service
+```
+Check the Cassandra service status to ensure it's running:
+```
+systemctl status cassandra.service
+```
+![cassandraservice](https://github.com/user-attachments/assets/4ba31293-74d2-4b76-ba7f-075ff98bd6f3)
+
+### 7. Configure ElasticSearch
+ElasticSearch is used for data indexing in TheHive. Configure it by modifying the `elasticsearch.yml` file:
+```
+nano /etc/elasticsearch/elasticsearch.yml
+```
+Optionally, change the cluster name.
+Uncomment the `node.name` field.\
+Uncomment the `network.host` field and set the IP to TheHive's public IP.\
+Optionally, uncomment the `http.port` field (default port is 9200).\
+Optionally, uncomment the `cluster.initial_master_nodes` field, remove `node-2` if not applicable. In this case I only use node-1.
+![elasticsearch](https://github.com/user-attachments/assets/f3298f13-6f02-44b7-9865-133aa5f83d2d)
+
+Start and enable the Elasticsearch service and check its status:
+```
+systemctl start elasticsearch
+```
+```
+systemctl enable elasticsearch
+```
+```
+systemctl status elasticsearch
+```
+![startenablestatuselastic](https://github.com/user-attachments/assets/dc691ffb-0b1e-45b0-9271-ec0ccf866b8d
+
+### 8. Configure TheHive
+Ensure the `thehive` user and group have access to the necessary file paths. If `root` has access to the `thehive` directory, change the ownership.
+```
+ls -la /opt/thp
+```
+```
+chown -R thehive:thehive /opt/thp
+```
+![thehivefileaccess](https://github.com/user-attachments/assets/30b11fa8-2685-4f5a-96f5-62d2968d6d0d)
+
+Now, configure TheHive's configuration file:
+```
+nano /etc/thehive/application.conf
+```
+
+Modify the `database` and `index config` sections.\
+Change the `hostname` IP to TheHive's public IP.\
+Set the `cluster.name` to the same value as the Cassandra cluster name ("autosoclab" in this example).\
+Change the `index.search.hostname` to TheHive's public IP.\
+At the bottom, change the localhost in `application.baseUrl` to TheHive's public IP.
+![thehiveconfig](https://github.com/user-attachments/assets/b24b5edc-942c-4d94-96d2-12f69f3555d0)
+
+Important note: If you cannot access TheHive, ensure all three services (Cassandra, Elasticsearch, and TheHive) are running. If any of them are not running, TheHive won't start.
+
+If all services are running, access TheHive from a web browser using TheHive's public IP and port 9000:
+```
+http://"hive public ip":9000
+```
 Default credentials for accessing TheHive on port 9000:
 ```
 Username: admin@thehive.local
 Password: secret
 ```
-![hiveinstall](https://github.com/user-attachments/assets/ecd143be-696e-431e-b270-6dad2f81eec1)
+![hivelogin](https://github.com/user-attachments/assets/3417607f-2f70-420a-841a-99b02b5cb6f6)
+
+### 9. Configure Wazuh
+login usign the admin creds from the initial install to the Wazuh web manager on your windows VM by going to `https://"wazuh public ip"`
+![wazuhconfig](https://github.com/user-attachments/assets/011cace4-a24c-4091-ba6b-f65dec2f2a20)
+Click on add agent and set the server address to the Wazuh server public IP.\
+The agent name can be whatever you want.\
+Copy and run the install command into an admin poweshell terminal on the VM\
+Start the Wazuh service in the terminal using:
+```
+NET START WazuhSvc
+```
