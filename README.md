@@ -207,3 +207,79 @@ Start the Wazuh service in the terminal using:
 ```
 NET START WazuhSvc
 ```
+
+### 10. Set Up A Custom Alert
+First we need to set the Wazuh client to take in Sysmon logs. On the Windows client machine, navigate to `C:\Program Files (x86)\ossec-agent`. Create a back up copy of the `ossec.conf` file. Now open the `ossec.conf` file with an adminstrator notepad.\
+Add the config highlighted below to the ossec file and save the file. 
+![wazuhsysmonconfig](https://github.com/user-attachments/assets/f0b20664-4d17-46c9-81dd-7005b513d79f)
+
+Note you can find the name of the Sysmon service in Event Viewer:
+![Sysmonname](https://github.com/user-attachments/assets/3cc0c5b2-3aa3-474d-9fd1-32ea5c5525eb)
+
+Anytime we change a config we need to restart the service.
+![restartwazuh](https://github.com/user-attachments/assets/f521b023-8716-475c-991d-c571157181ee)
+
+By default, Wazuh only logs events that trigger a rule or alert. We need to log all events.
+Connect to the Wazuh server via SSH 
+Always back up config files before you modify them:
+```
+cp /var/ossec/etc/ossec.conf ~/ossec-backup.conf
+```
+open the file:
+```
+nano /var/ossec/etc/ossec.conf
+```
+Change the `<logall>` and `<logall_json>` options under the `<ossec_config>` section from "no" to "yes".
+![wazuhossec](https://github.com/user-attachments/assets/5785791d-2bb2-4314-9803-d6e2e66c1871)
+
+Remember to restart the Wazuh manager service:
+```
+systemctl restart wazuh-manager.service
+```
+
+To enable Wazuh to ingest the archived logs, modify the Filebeat configuration:
+```
+nano /etc/filebeat/filebeat.yml
+```
+Change the archives enabled to `true` 
+![filebeatconfig](https://github.com/user-attachments/assets/79ad027b-e2b1-4af2-97dc-d7fdec050c9b)
+
+Remember to restart filebeat:
+```
+systemctl restart filebeat
+```
+
+Now lets run malware on the Windows VM. Download mimikatz_trunk.zip here: `https://github.com/gentilkiwi/mimikatz/releases`\
+Mimikatz is commanly used by attackers to extract crednetials from memory. You will probably need to exclude the downloads folder from Windows Security and disable your browsers protections. Otherwise the Windows VM will just block you from downloading the file\
+Once downloaded and unzipped open and admin powershell and cd to the mimikatz folder and run it.
+![mimikatz](https://github.com/user-attachments/assets/93b7ae22-b2d2-4a65-981d-db5418e21d02)
+
+Now we need to create a new index in the Wazuh web manager to search the archived logs.
+From the left-side menu, go to "Stack Management" > "Index Patterns" > "Create index pattern".\
+Name it `wazuh-archives-**`
+![wazuhindexpattern](https://github.com/user-attachments/assets/bb953259-a7d9-4b73-9b48-b322b7273d3c)
+On the next page select "timestamp" as the time field and create the index
+
+From the left menu go to "Discover" and select the new index.
+![wazuhmimikatz](https://github.com/user-attachments/assets/375b9ea2-732d-4487-a4f1-e200e4389bef)
+
+You should see mimikatz logs if not try rerunning mimikats:
+![rerunmimikatz](https://github.com/user-attachments/assets/b10327fc-185d-49a3-89fb-62b874a54850)
+
+Take note of the original file name field in the log details. This is what we will use to create a custom rule.
+![originalfilename](https://github.com/user-attachments/assets/60173450-1822-4a9c-88f6-3462635f3b1d)
+
+To create the rule: "Home" > "Wazuh dropdown" > "Management" > "Rules" > "Manage Rule Files" > Search for Sysmon
+![ruleswazuh](https://github.com/user-attachments/assets/06f8e873-a65c-4ee3-af14-052de146fea7)
+
+Search for Sysmon rules, "0800-sysmon_id_1.xml" are the rules for event ID 1. Using the eye to learn how to structure a custom rule by referencing the sysmon rules. Then click Custome Rule and click the pencil on the local rules to write a rule:\
+![customwazuhrule](https://github.com/user-attachments/assets/377ec4e3-3c60-4e97-93e0-5ba6d953a5c4)
+After saving you will be prompted to restart the Wazauh manager, do so. 
+
+Now lets test our rule. In the windows VM rename the mimikatz exe. This is why we set the originalFileName as the property in the rule. No matter what the name has been changed to, our custom rule should detect it.\
+![verysafe](https://github.com/user-attachments/assets/ba3f3a97-f883-4b85-a1a0-5cf3cd5236f4)
+
+Now in Securty Events on the Wazuh web manager you should see the rule getting caught:
+![mimikatzdetected](https://github.com/user-attachments/assets/d07e2b2d-9207-4932-90f7-ff8e4ac872ca)
+
+
