@@ -207,7 +207,7 @@ NET START WazuhSvc
 ```
 
 ### 10. Set Up A Custom Alert
-First we need to set the Wazuh client to take in Sysmon logs. On the Windows client machine, navigate to `C:\Program Files (x86)\ossec-agent`. Create a back up copy of the `ossec.conf` file. Now open the `ossec.conf` file with an adminstrator notepad.\
+First we need to set the Wazuh client to take in Sysmon logs. On the Windows client machine, navigate to `C:\Program Files (x86)\ossec-agent`. Create a back up copy of the `ossec.conf` file. Now open the `ossec.conf` file with an administrator notepad.\
 Add the config highlighted below to the ossec file and save the file. 
 ![wazuhsysmonconfig](https://github.com/user-attachments/assets/f0b20664-4d17-46c9-81dd-7005b513d79f)
 
@@ -248,8 +248,8 @@ systemctl restart filebeat
 ```
 
 Now lets run malware on the Windows VM. Download mimikatz_trunk.zip here: `https://github.com/gentilkiwi/mimikatz/releases`\
-Mimikatz is commanly used by attackers to extract crednetials from memory. You will probably need to exclude the downloads folder from Windows Security and disable your browsers protections. Otherwise the Windows VM will just block you from downloading the file\
-Once downloaded and unzipped open and admin powershell and cd to the mimikatz folder and run it.
+Mimikatz is commonly used by attackers to extract credentials from memory. You will probably need to exclude the downloads folder from Windows Security and disable your browsers protections. Otherwise the Windows VM will just block you from downloading the file\
+Once downloaded and unzipped open and admin PowerShell and cd to the mimikatz folder and run it.
 ![mimikatz](https://github.com/user-attachments/assets/93b7ae22-b2d2-4a65-981d-db5418e21d02)
 
 Now we need to create a new index in the Wazuh web manager to search the archived logs.
@@ -352,8 +352,8 @@ When you try rerunning the workflow you may get an error from TheHive node. The 
 Also shuffle does not highlight all the necessary fields for the API: description, source and sourceref need to have values. Once that is all filled out rerun the workflow and you should see an alert on TheHive dashboard when you log in as the normal user you set up earlier: 
 ![hivealert](https://github.com/user-attachments/assets/2360b4a1-2bc5-4145-95ae-d51a343ed49b)
 
-To set up email alerts just add the email node and change the action to send email from shuffle unless you have an smtp server youd like to use. I do not so will just use shuffle and fill out the body of the email as you see fit to send an alert.
+To set up email alerts just add the email node and change the action to send email from shuffle unless you have an smtp server you'd like to use. I do not, so I will just use shuffle. Fill out the body of the email as you see fit to send an alert.
 ![email](https://github.com/user-attachments/assets/583dc891-fc1b-453f-bcc2-d5fda06dc7a3)
 
 ## 12. Conclusion
-With this I have fully set up and configured the SOC Automation Lab. I have successfully integrated Wazuh, TheHive, and Shuffle for automated monitoring, alerting and incident response. This is a simple set up for now but provides a solid foundation to add more automated response. I could use the Wazuh API to automatically lock out the users AD account as soon as suspicious activity is detected or even quarantine the machine if I suspect its accesed a malicious site. This lab provided great hands on experince in automating SOC workflows and integratien a SIEM with a SOAR. I can now leverage this knowledge to improve incident response time and strealine investigations and quartentine/lockout procedures. 
+With this I have fully set up and configured the SOC Automation Lab. I have successfully integrated Wazuh, TheHive, and Shuffle for automated monitoring, alerting and incident response. This is a simple set up for now but provides a solid foundation to add more automated response. I could use the Wazuh API to automatically lock out the users AD account as soon as suspicious activity is detected or even quarantine the machine if I suspect its accessed a malicious site. This lab provided great hands on experience in automating SOC workflows and integration a SIEM with a SOAR. I can now leverage this knowledge to improve incident response time and streamline investigations. 
