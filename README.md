@@ -1,4 +1,4 @@
-# SOC Automation (In Progress)
+# SOC Automation
 
 **Acknowledgment:** This project benefited greatly from the insights and tutorials provided by the YouTube channel [MyDFIR](https://www.youtube.com/@mydfir). Their comprehensive videos were invaluable in understanding and implementing the various components of the SOC Automation Lab.
 
@@ -282,4 +282,80 @@ Now lets test our rule. In the windows VM rename the mimikatz exe. This is why w
 Now in Securty Events on the Wazuh web manager you should see the rule getting caught:
 ![mimikatzdetected](https://github.com/user-attachments/assets/d07e2b2d-9207-4932-90f7-ff8e4ac872ca)
 
+### 11. Automation with Shuffle and The Hive 
+First set up an account on `shuffler.io` and create a new workflow. In the work flow add a webhook. Take note of the webhook url as we will need to add this to our wazuh server config.
+![webhookurl](https://github.com/user-attachments/assets/19fcdc5e-ef36-44e1-8e41-fb7fe3b2d911)
 
+In the wazuh server modify the config to include the shuffle integration
+```
+nano /var/ossec/etc/ossec.conf
+```
+
+Add the following integration configuration to the ossec.conf.Note here you can use rule_id to send shuffle specific rules but we could also use level to send all alerts of a certain level to shuffle. We will use rule_id to keep it simple and focus on the mimikatz rule. And remember to restart the `wazuh-manager.service`.
+```xml
+<integration>
+  <name>shuffle</name>
+  <hook_url>https://shuffler.io/api/v1/hooks/webhook_2640de51-167e-4544-afb1-9c8c17929f15</hook_url>
+  <rule_id>100002</rule_id>
+  <alert_format>json</alert_format>
+</integration>
+```
+![wazuhshuffleconfig](https://github.com/user-attachments/assets/51a059f2-2080-49ae-9086-3df3e5036369)
+
+Now in the windows VM rerun mimikatz and to generate the alert. In shuffle hit start on the webhook and click the green play button to run the workflow. Click on the running person icon and Yyou should get an the mimikats log in shuffle now.
+![shuffle1](https://github.com/user-attachments/assets/b20d473f-e805-4ac7-b0c3-efdb7a06cd7e)
+
+Now with the log its time to set up the workflow:
+1. Mimikatz alert sent to Shuffle
+2. Shuffle receives Mimikatz alert / extract SHA256 hash from file
+3. Check reputation score with VirusTotal
+4. Send details to TheHive to create an alert
+5. Send an email to the SOC analyst to begin the investigation
+
+First, In the previous run menu expand the "Change Me" node and expand the `eventdata` Here you will see the Hash for the mimikats log.
+![eventdata](https://github.com/user-attachments/assets/b01fd0e9-b0a1-4add-b4e5-416928deed32)
+
+Now on the workflow chart expand the "Change Me" node and set up the regex to capture the sha256 hash. Also rename the node to "SHA256_Regex".
+![regexcapture](https://github.com/user-attachments/assets/1d98bbeb-41ca-42ef-a738-20f08fe3e236)
+
+Rerun mimkatz on the windows vm and in shuffle click on the running man icon and a new event should appear in finihed runs showing our hash.
+![regextest](https://github.com/user-attachments/assets/e1d45fd0-02ba-4bb7-941e-637bf501873d)
+
+Now we can add VirusTotal to get a report on the hash. Search and add a VirusTotal node to workflow. and set it up like below.
+![virustotal](https://github.com/user-attachments/assets/1129d2cf-a1e4-43f0-9661-cbbeb48fdbb3)
+
+In the previous workflow runs menu rerun the last workflow and ensure virus scan is able to return a report on the hash.
+![hashreport](https://github.com/user-attachments/assets/cd8fea45-634f-430d-a8ff-b64f20da7351)
+
+Now we need to get TheHive ready to recive alerts. Log onto TheHive web manager and create a new organization. Name it as you see fit, Add 2 users one as a normal account and the other as a service account. for the normal account click preview and set a password so you can log in. For the service account in the preview screen create an API key and save the key.
+![hiveuser1](https://github.com/user-attachments/assets/1d529948-4f9a-4045-840e-cab7e98814af)
+
+Now on the shuffle workflow add a TheHive node by searching for it and use the api key to authenticate the URL will be `http://"hive public ip":9000`. The screenshot is an example of how you can set up the alert but what information you want in the summary is truly up to you.
+![thehiveshuffle](https://github.com/user-attachments/assets/fc992ab9-a98a-49ca-b050-fa68f5d6c10e)
+
+When you try rerunning the workflow you may get an error from TheHive node. The default JSON in the advanced tab is wrong some of the fields are missing "". Here is a corrected one:
+```
+{
+  "description": "{{ '''${description}''' | replace: '\n', '\\r\\n' }}",
+  "externallink": "${externallink}",
+  "flag": "${flag}",
+  "pap": "${pap}",
+  "severity": "${severity}",
+  "source": "${source}",
+  "sourceRef": "${sourceref}",
+  "status": "${status}",
+  "summary": "${summary}",
+  "tags": "${tags}",
+  "title": "${title}",
+  "tlp": "${tlp}",
+  "type": "${type}"
+}
+```
+Also shuffle does not highlight all the necessary fields for the API: description, source and sourceref need to have values. Once that is all filled out rerun the workflow and you should see an alert on TheHive dashboard when you log in as the normal user you set up earlier: 
+![hivealert](https://github.com/user-attachments/assets/2360b4a1-2bc5-4145-95ae-d51a343ed49b)
+
+To set up email alerts just add the email node and change the action to send email from shuffle unless you have an smtp server youd like to use. I do not so will just use shuffle and fill out the body of the email as you see fit to send an alert.
+![email](https://github.com/user-attachments/assets/583dc891-fc1b-453f-bcc2-d5fda06dc7a3)
+
+## 12. Conclusion
+With this I have fully set up and configured the SOC Automation Lab. I have successfully integrated Wazuh, TheHive, and Shuffle for automated monitoring, alerting and incident response. This is a simple set up for now but provides a solid foundation to add more automated response. I could use the Wazuh API to automatically lock out the users AD account as soon as suspicious activity is detected or even quarantine the machine if I suspect its accesed a malicious site. This lab provided great hands on experince in automating SOC workflows and integratien a SIEM with a SOAR. I can now leverage this knowledge to improve incident response time and strealine investigations and quartentine/lockout procedures. 
